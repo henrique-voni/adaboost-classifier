@@ -1,33 +1,17 @@
+# Sklearn built-in classes for custom estimator
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y
 from sklearn.utils import check_random_state
-from sklearn.neural_network import MLPClassifier
-from sklearn_extensions.extreme_learning_machines import ELMClassifier
 
+# imports
 import numpy as np
 import itertools
 
-class EstimatorFactory():
-    @staticmethod
-    def create(algorithm, params):
-       if algorithm == "MLP":
-           return EstimatorFactory.create_mlp_(params)
-       elif algorithm == "ELM":
-           return EstimatorFactory.create_elm_(params)
-
-    @staticmethod
-    def create_mlp_(params):
-        return MLPClassifier(**params)
-
-    @staticmethod
-    def create_elm_(params):
-        return ELMClassifier(**params)
-
-
+from EstimatorFactory import EstimatorFactory
 
 class Adaboost(BaseEstimator, ClassifierMixin):
 
-    def __init__(self, estimators=[MLPClassifier(hidden_layer_sizes=10)], n_rounds=5, random_state=None):
+    def __init__(self, estimators=["MLP"], n_rounds=5, random_state=None):
         self.estimators = estimators
         self.n_rounds = n_rounds
         self.random_state = random_state
