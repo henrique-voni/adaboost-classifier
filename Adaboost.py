@@ -25,9 +25,10 @@ class Adaboost(BaseEstimator, ClassifierMixin):
         return 0.5 * np.log((1-z) / float(z))
 
     def compute_error(self, y_pred, y):
-        # retornar quais indices tb
-        return len(sample for (y_pd, y_real) in zip(y_pred, y) if y_pd != y_real)
-
+        miss_w_idx = np.flatnonzero(y_pred != y) # Retorna indices das amostras erradas
+        miss_w = np.take(self.w, miss_w_idx) # Retorna os pesos das amostras erradas
+        return sum(miss_w) / sum(self.w)
+        
 
     def normalize_weights(self, w):
         return w / sum(w)
