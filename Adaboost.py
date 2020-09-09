@@ -13,6 +13,7 @@ class Adaboost(BaseEstimator, ClassifierMixin):
         
 
     def fit(self, X, y):
+        self.w = np.ones(X.shape[0]) / X.shape[0]
         self.random_state_ = check_random_state(self.random_state)
         X,y = check_X_y(X, y)
         return self
@@ -20,15 +21,15 @@ class Adaboost(BaseEstimator, ClassifierMixin):
     def predict(self, X):
         pass
 
-    def compute_alpha(z):
+    def compute_alpha(self, z):
         return 0.5 * np.log((1-z) / float(z))
 
-    def compute_error(y_pred, y):
+    def compute_error(self, y_pred, y):
         # retornar quais indices tb
         return len(sample for (y_pd, y_real) in zip(y_pred, y) if y_pd != y_real)
 
 
-    def normalize_weights(w):
+    def normalize_weights(self, w):
         return w / sum(w)
 
 
