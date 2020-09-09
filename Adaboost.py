@@ -39,7 +39,7 @@ class Adaboost(BaseEstimator, ClassifierMixin):
 
 
 
-        return self.estimators
+        return self
 
     def predict(self, X):
         pass
