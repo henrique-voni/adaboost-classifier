@@ -32,7 +32,7 @@ class Adaboost(BaseEstimator, ClassifierMixin):
 
         for _ in range(self.n_rounds):
             
-            clf = next(i)
+            clf = EstimatorFactory.create(next(i))
             clf.fit(X,y)
             
             y_pred = clf.predict(X)
