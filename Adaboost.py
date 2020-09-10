@@ -18,40 +18,52 @@ class Adaboost(BaseEstimator, ClassifierMixin):
         
 
     def fit(self, X, y):
+        self.random_state_ = check_random_state(self.random_state)
+
+        self.classes_ = np.unique(y)
+        self.n_classes_ = len(self.classes_)
+        self.models_ = []
+        
+        self.w = np.ones(X.shape[0]) / X.shape[0]
+
         i = itertools.cycle(self.estimators)
         
-        self.models_ = []
-        self.estimators_ = [next(i) for _ in range(self.n_rounds)]
-        self.w = np.ones(X.shape[0]) / X.shape[0]
-       
-        self.random_state_ = check_random_state(self.random_state)
         X,y = check_X_y(X, y)
 
-        #Primeiro round
+        for _ in range(self.n_rounds):
+            
+            clf = next(i)
+            clf.fit(X,y)
+            
+            y_pred = clf.predict(X)
+            
+            clf_err = self.compute_error(y_pred, y)
+            clf_alpha = self.compute_alpha(clf_err, self.n_classes_)
+            
+            self.models_.append((clf, clf_alpha))
 
-        
+            self.w = self.update_weights(self.w)
 
-
-
-
-
-
-
-
+            X,y = self.resample_with_replacement(X,y)
 
         return self
 
     def predict(self, X):
         pass
 
-    def compute_alpha(self, z):
-        return 0.5 * np.log((1-z) / float(z))
+    def compute_alpha(self, z, K):
+        return 0.5 * np.log((1-z) / float(z)) + np.log(K - 1) # Equação adaptada para algoritmo SAMME
 
     def compute_error(self, y_pred, y):
         miss_w_idx = np.flatnonzero(y_pred != y) # Retorna indices das amostras erradas
         miss_w = np.take(self.w, miss_w_idx) # Retorna os pesos das amostras erradas
         return sum(miss_w) / sum(self.w)
 
+    def update_weights(self,w):
+        pass
+
+    def resample_with_replacement(self,X,y):
+        pass
 
     def normalize_weights(self, w):
         return w / sum(w)
