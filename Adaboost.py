@@ -37,12 +37,18 @@ class Adaboost(BaseEstimator, ClassifierMixin):
             clf.fit(X,y)
 
             y_pred = clf.predict(X)
-            
+
             clf_err = self.compute_error(y_pred, y)
-            clf_alpha = self.compute_alpha(clf_err, self.n_classes)
+
+            # Condição para SAMME: (1 - erro) < 1/n_classes
+            if(1 - clf_err) < (1/self.n_classes):
+                raise ValueError("Weak classifer performed poorly, so (1-err) < (1 / n_classes).")
+
+
+            clf_alpha = self.compute_alpha(clf_err)
             
             self.models.append((clf, clf_alpha))
-            self.w = self.update_weights(self.w)
+            self.update_weights()
 
             X,y = self.resample_with_replacement(X,y)
 
@@ -51,8 +57,8 @@ class Adaboost(BaseEstimator, ClassifierMixin):
     def predict(self, X):
         pass
 
-    def compute_alpha(self, z, K):
-        return 0.5 * np.log((1-z) / float(z)) + np.log(K - 1) # Equação adaptada para algoritmo SAMME
+    def compute_alpha(self, z):
+        return 0.5 * np.log((1-z) / float(z)) + np.log(self.n_classes - 1) # Equação adaptada para algoritmo SAMME
 
     def compute_error(self, y_pred, y):
         miss_w_idx = np.flatnonzero(y_pred != y) # Retorna indices das amostras erradas
@@ -60,7 +66,7 @@ class Adaboost(BaseEstimator, ClassifierMixin):
         print("Error: ", sum(miss_w) / sum(self.w))
         return sum(miss_w) / sum(self.w)
 
-    def update_weights(self,w):
+    def update_weights(self):
         # correct_w_idx =     
         pass
 
