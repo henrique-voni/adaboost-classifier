@@ -19,6 +19,8 @@ class Adaboost(BaseEstimator, ClassifierMixin):
 
     def fit(self, X, y):
         self.random_state_ = check_random_state(self.random_state)
+        # np.random.seed(self.random_state_)
+
 
         self.classes = np.unique(y)
         self.n_classes = len(self.classes)
@@ -48,9 +50,10 @@ class Adaboost(BaseEstimator, ClassifierMixin):
             clf_alpha = self.compute_alpha(clf_err)
             
             self.models.append((clf, clf_alpha))
-            self.update_weights()
+            self.update_weights(y_pred, y, clf_alpha)
 
             X,y = self.resample_with_replacement(X,y)
+            print("Classifier fitted successfully")
 
         return self
 
@@ -66,10 +69,13 @@ class Adaboost(BaseEstimator, ClassifierMixin):
         print("Error: ", sum(miss_w) / sum(self.w))
         return sum(miss_w) / sum(self.w)
 
-    def update_weights(self):
-        # correct_w_idx =     
-        pass
-
+    def update_weights(self, y_pred, y, alpha):
+        ## atualizar apenas amostras classificadas incorretamente
+        wrong_idx = np.nonzero(y_pred != y)
+        wrong_sample_weights = np.take(self.w, wrong_idx)
+        wrong_sample_weights = wrong_sample_weights * np.exp(alpha)
+        np.put(self.w, wrong_idx, wrong_sample_weights)
+        self.normalize_weights()
 
     def resample_with_replacement(self, X, y):   
         y = y.reshape(y.shape[0], 1)
@@ -83,5 +89,12 @@ class Adaboost(BaseEstimator, ClassifierMixin):
 
 
     def normalize_weights(self):
-        return self.w / sum(self.w)
+        self.w = self.w / sum(self.w)
 
+
+# from sklearn.datasets import load_iris
+
+# ada = Adaboost()
+# X,y = load_iris(return_X_y=True)
+
+# ada.fit(X,y)
