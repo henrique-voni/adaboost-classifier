@@ -82,6 +82,6 @@ class Adaboost(BaseEstimator, ClassifierMixin):
         return new_X, new_y    
 
 
-    def normalize_weights(self, w):
-        return w / sum(w)
+    def normalize_weights(self):
+        return self.w / sum(self.w)
 
