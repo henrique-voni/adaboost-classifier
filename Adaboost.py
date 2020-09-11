@@ -20,11 +20,12 @@ class Adaboost(BaseEstimator, ClassifierMixin):
     def fit(self, X, y):
         self.random_state_ = check_random_state(self.random_state)
 
-        self.classes_ = np.unique(y)
-        self.n_classes_ = len(self.classes_)
-        self.models_ = []
+        self.classes = np.unique(y)
+        self.n_classes = len(self.classes)
+        self.models = []
+        self.n_samples = X.shape[0]
         
-        self.w = np.ones(X.shape[0]) / X.shape[0]
+        self.w = np.ones(self.n_samples) / self.n_samples
 
         i = itertools.cycle(self.estimators)
         
@@ -34,14 +35,13 @@ class Adaboost(BaseEstimator, ClassifierMixin):
             
             clf = EstimatorFactory.create(next(i))
             clf.fit(X,y)
-            
+
             y_pred = clf.predict(X)
             
             clf_err = self.compute_error(y_pred, y)
-            clf_alpha = self.compute_alpha(clf_err, self.n_classes_)
+            clf_alpha = self.compute_alpha(clf_err, self.n_classes)
             
-            self.models_.append((clf, clf_alpha))
-
+            self.models.append((clf, clf_alpha))
             self.w = self.update_weights(self.w)
 
             X,y = self.resample_with_replacement(X,y)
@@ -57,17 +57,25 @@ class Adaboost(BaseEstimator, ClassifierMixin):
     def compute_error(self, y_pred, y):
         miss_w_idx = np.flatnonzero(y_pred != y) # Retorna indices das amostras erradas
         miss_w = np.take(self.w, miss_w_idx) # Retorna os pesos das amostras erradas
+        print("Error: ", sum(miss_w) / sum(self.w))
         return sum(miss_w) / sum(self.w)
 
     def update_weights(self,w):
+        # correct_w_idx =     
         pass
 
-    def resample_with_replacement(self,X,y):
-        pass
+
+    def resample_with_replacement(self, X, y):   
+        y = y.reshape(y.shape[0], 1)
+        X = np.append(X,y, axis=1)
+        resampled_idx = np.random.choice(X.shape[0], X.shape[0], p=self.w)  
+        resamples = np.take(X, resampled_idx, axis=0)
+
+        new_y = resamples[:, -1]
+        new_X = np.delete(resamples, -1, 1)
+        return new_X, new_y    
+
 
     def normalize_weights(self, w):
         return w / sum(w)
 
-
-
-    
