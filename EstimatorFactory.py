@@ -16,16 +16,16 @@ class EstimatorFactory:
     }
 
     @staticmethod
-    def create(algorithm):
+    def create(algorithm, random_state):
        if algorithm == "MLP":
-           return EstimatorFactory.create_mlp_(params=EstimatorFactory.MLP_PARAMS)
+           return EstimatorFactory.create_mlp_(params=EstimatorFactory.MLP_PARAMS, random_state=random_state)
        elif algorithm == "ELM":
-           return EstimatorFactory.create_elm_(params=EstimatorFactory.ELM_PARAMS)
+           return EstimatorFactory.create_elm_(params=EstimatorFactory.ELM_PARAMS, random_state=random_state)
 
     @staticmethod
-    def create_mlp_(params):
-        return MLPClassifier(**params)
+    def create_mlp_(params, random_state):
+        return MLPClassifier(**params, random_state=random_state)
 
     @staticmethod
-    def create_elm_(params):
-        return ELMClassifier(**params)
+    def create_elm_(params, random_state):
+        return ELMClassifier(**params, random_state=random_state)
