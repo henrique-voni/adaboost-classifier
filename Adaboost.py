@@ -47,8 +47,11 @@ class Adaboost(BaseEstimator, ClassifierMixin):
 
             clf_err = self.compute_error(y_pred, y)
 
+            if clf_err == 0:
+                clf_err = 1e-10 ## Evita divisão por zero para classificadores perfeitos
+
             # Condição para SAMME: (1 - erro) < 1/n_classes
-            if(1 - clf_err) < (1/self.n_classes):
+            if (1 - clf_err) < (1/self.n_classes):
                 raise ValueError("Weak classifer performed poorly, so (1-err) < (1 / n_classes).")
 
 
@@ -79,8 +82,6 @@ class Adaboost(BaseEstimator, ClassifierMixin):
         N = self.n_samples
         M = np.array([alphas])
         A = predict_matrix
-        K = np.empty((self.n_classes, N))
-
 
         ## Voto majoritário pela soma dos pesos (alphas) dos classificadores.
         predictions = np.argmax(np.array([M.dot(np.where(A == k, 1, 0).T) for k in self.classes]), 
@@ -119,6 +120,3 @@ class Adaboost(BaseEstimator, ClassifierMixin):
 
     def normalize_weights(self):
         self.w = self.w / sum(self.w)
-
-
-
