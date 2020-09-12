@@ -58,7 +58,23 @@ class Adaboost(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(self, X):
-        pass
+        
+        predict_matrix = np.zeros( (len(self.models), self.n_samples) )
+
+        predicted_values = np.zeros( (self.n_samples, self.n_classes))
+
+        for i, (clf, alpha) in enumerate(self.models):
+            clf_pred = clf.predict(X)
+            predict_matrix[i] = clf_pred
+        
+        # Transpor a matriz para que cada coluna seja a predição de um classificador
+        predict_matrix = predict_matrix.T
+
+        return predict_matrix
+
+
+
+
 
     def compute_alpha(self, z):
         return 0.5 * np.log((1-z) / float(z)) + np.log(self.n_classes - 1) # Equação adaptada para algoritmo SAMME
@@ -92,9 +108,13 @@ class Adaboost(BaseEstimator, ClassifierMixin):
         self.w = self.w / sum(self.w)
 
 
-# from sklearn.datasets import load_iris
+from sklearn.datasets import load_iris
 
-# ada = Adaboost()
-# X,y = load_iris(return_X_y=True)
+ada = Adaboost()
+X,y = load_iris(return_X_y=True)
 
-# ada.fit(X,y)
+ada.fit(X,y)
+
+
+y_pred = ada.predict(X)
+print(y_pred)
