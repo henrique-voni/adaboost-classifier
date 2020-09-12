@@ -1,3 +1,8 @@
+"""
+    Adaboost for Multiclass problems (SAMME) 
+    @author: Henrique Voni (github.com/henrique-voni)
+"""
+
 # Sklearn built-in classes for custom estimator
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y
@@ -60,20 +65,28 @@ class Adaboost(BaseEstimator, ClassifierMixin):
     def predict(self, X):
         
         predict_matrix = np.zeros( (len(self.models), self.n_samples) )
-
-        predicted_values = np.zeros( (self.n_samples, self.n_classes))
+        
+        alphas = []
 
         for i, (clf, alpha) in enumerate(self.models):
             clf_pred = clf.predict(X)
             predict_matrix[i] = clf_pred
+            alphas.append(alpha)
         
         # Transpor a matriz para que cada coluna seja a predição de um classificador
         predict_matrix = predict_matrix.T
 
-        return predict_matrix
+        N = self.n_samples
+        M = np.array([alphas])
+        A = predict_matrix
+        K = np.empty((self.n_classes, N))
 
 
+        ## Voto majoritário pela soma dos pesos (alphas) dos classificadores.
+        predictions = np.argmax(np.array([M.dot(np.where(A == k, 1, 0).T) for k in self.classes]), 
+                                axis = 0)[0]        
 
+        return predictions
 
 
     def compute_alpha(self, z):
@@ -108,13 +121,4 @@ class Adaboost(BaseEstimator, ClassifierMixin):
         self.w = self.w / sum(self.w)
 
 
-from sklearn.datasets import load_iris
 
-ada = Adaboost()
-X,y = load_iris(return_X_y=True)
-
-ada.fit(X,y)
-
-
-y_pred = ada.predict(X)
-print(y_pred)
