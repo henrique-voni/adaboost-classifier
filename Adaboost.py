@@ -121,7 +121,3 @@ class Adaboost(BaseEstimator, ClassifierMixin):
     def normalize_weights(self):
         self.w = self.w / sum(self.w)
 
-
-from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
