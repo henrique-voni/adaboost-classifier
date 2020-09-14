@@ -65,8 +65,8 @@ class Adaboost(BaseEstimator, ClassifierMixin):
 
     def predict(self, X):
         
-        predict_matrix = np.zeros( (len(self.models), self.n_samples) )
-        
+        # predict_matrix = np.zeros( (len(self.models), self.n_samples) )
+        predict_matrix = np.zeros( (len(self.models), X.shape[0]) )
         alphas = []
 
         for i, (clf, alpha) in enumerate(self.models):
@@ -77,7 +77,8 @@ class Adaboost(BaseEstimator, ClassifierMixin):
         # Transpor a matriz para que cada coluna seja a predição de um classificador
         predict_matrix = predict_matrix.T
 
-        N = self.n_samples
+        # N = self.n_samples
+        # N = X.shape[0]
         M = np.array([alphas])
         A = predict_matrix
 
@@ -121,4 +122,6 @@ class Adaboost(BaseEstimator, ClassifierMixin):
         self.w = self.w / sum(self.w)
 
 
-
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
