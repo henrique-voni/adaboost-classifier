@@ -88,6 +88,10 @@ class Adaboost(BaseEstimator, ClassifierMixin):
 
         return predictions
 
+    def score(self, X, y):
+        scr_pred = self.predict(X)
+        return sum(scr_pred == y) / X.shape[0]
+
 
     def compute_alpha(self, z):
         return 0.5 * np.log((1-z) / float(z)) + np.log(self.n_classes - 1) # Equação adaptada para algoritmo SAMME
