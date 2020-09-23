@@ -86,7 +86,7 @@ class Adaboost(BaseEstimator, ClassifierMixin):
         predictions = np.argmax(np.array([M.dot(np.where(A == k, 1, 0).T) for k in self.classes]), 
                                 axis = 0)[0]        
 
-        return predictions
+        return np.take(self.classes, predictions)
 
     def score(self, X, y):
         scr_pred = self.predict(X)
