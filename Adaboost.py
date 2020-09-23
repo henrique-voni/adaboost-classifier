@@ -35,15 +35,16 @@ class Adaboost(BaseEstimator, ClassifierMixin):
         i = itertools.cycle(self.estimators)
         
         X,y = check_X_y(X, y)
+        X_fit, y_fit = X.copy(), y.copy()
 
         for _ in range(self.n_rounds):
             
             clf = EstimatorFactory.create(next(i), random_state=self.random_state_)
-            clf.fit(X,y)
+            clf.fit(X_fit,y_fit)
 
             y_pred = clf.predict(X)
 
-            clf_err = self.compute_error(y_pred, y)
+            clf_err = self.compute_error(y_pred, y_fit)
 
             if clf_err == 0:
                 clf_err = 1e-10 ## Evita divisão por zero para classificadores perfeitos
@@ -52,13 +53,12 @@ class Adaboost(BaseEstimator, ClassifierMixin):
             if (1 - clf_err) < (1/self.n_classes):
                 raise ValueError("Weak classifer performed poorly, so (1-err) < (1 / n_classes).")
 
-
             clf_alpha = self.compute_alpha(clf_err)
             
             self.models.append((clf, clf_alpha))
-            self.update_weights(y_pred, y, clf_alpha)
+            self.update_weights(y_pred, y_fit, clf_alpha)
 
-            X,y = self.resample_with_replacement(X,y)
+            X_fit,y_fit = self.resample_with_replacement(X_fit,y_fit)
             print("Classifier fitted successfully")
 
         return self
