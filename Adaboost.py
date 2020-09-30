@@ -16,10 +16,12 @@ from EstimatorFactory import EstimatorFactory
 
 class Adaboost(BaseEstimator, ClassifierMixin):
 
-    def __init__(self, estimators=["MLP"], n_rounds=5, random_state=10):
+    def __init__(self, estimators=["MLP"], mlp_params=None, elm_params=None, n_rounds=5, random_state=10):
         self.estimators = estimators
         self.n_rounds = n_rounds
         self.random_state = random_state
+        self.mlp_params_ = mlp_params
+        self.elm_params_ = elm_params
         
 
     def fit(self, X, y):
@@ -39,12 +41,12 @@ class Adaboost(BaseEstimator, ClassifierMixin):
 
         for _ in range(self.n_rounds):
             
-            clf = EstimatorFactory.create(next(i), random_state=self.random_state_)
+            clf = EstimatorFactory.create(next(i), random_state=self.random_state_, elm_params=self.elm_params_, mlp_params=self.mlp_params_)
             clf.fit(X_fit,y_fit)
 
             y_pred = clf.predict(X)
 
-            clf_err = self.compute_error(y_pred, y_fit)
+            clf_err = self.compute_error(y_pred, y)
 
             if clf_err == 0:
                 clf_err = 1e-10 ## Evita divisão por zero para classificadores perfeitos
@@ -56,9 +58,9 @@ class Adaboost(BaseEstimator, ClassifierMixin):
             clf_alpha = self.compute_alpha(clf_err)
             
             self.models.append((clf, clf_alpha))
-            self.update_weights(y_pred, y_fit, clf_alpha)
+            self.update_weights(y_pred, y, clf_alpha)
 
-            X_fit,y_fit = self.resample_with_replacement(X_fit,y_fit)
+            X_fit,y_fit = self.resample_with_replacement(X,y)
             print("Classifier fitted successfully")
 
         return self
@@ -114,7 +116,12 @@ class Adaboost(BaseEstimator, ClassifierMixin):
         y = y.reshape(y.shape[0], 1)
         X = np.append(X,y, axis=1)
 
-        resampled_idx = self.random_state_.choice(X.shape[0], X.shape[0], p=self.w)  
+        resampled_idx = self.random_state_.choice(X.shape[0], X.shape[0], p=self.w)
+        
+        ## TEST 
+        # unique, counts = np.unique(resampled_idx, return_counts=True)
+        # print(np.asarray((unique, counts)).T)
+
         resamples = np.take(X, resampled_idx, axis=0)
 
         new_y = resamples[:, -1]
@@ -124,4 +131,6 @@ class Adaboost(BaseEstimator, ClassifierMixin):
 
     def normalize_weights(self):
         self.w = self.w / sum(self.w)
+
+
 
